@@ -1,0 +1,177 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "unique-env-prefix": {
+            "type": "string"
+        },
+        "virtual-network-name": {
+            "type": "string"
+        },
+        "subnet-name": {
+            "type": "string"
+        },
+        "admin-username":{
+            "type": "string"
+        },
+        "admin-publickey": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "resourcePrefix": "[concat('jmeter-', parameters('unique-env-prefix'))]",
+        "publicIPAddressName": "[concat(variables('resourcePrefix'), '-ip')]",
+        "networkSecurityGroupName": "[concat(variables('resourcePrefix'), '-nsg')]",
+        "networkInterfaceName": "[concat(variables('resourcePrefix'), '-nic')]",
+
+        "vnetId": "[resourceId('lnxgroup','Microsoft.Network/virtualNetworks', parameters('virtual-network-name'))]",
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnet-name'))]",
+
+        "masterVM": "[concat(variables('resourcePrefix'),'-master')]",
+        "virtualMachineSize": "Standard_DS1_v2",
+        "vmExtensionName": "[concat(variables('resourcePrefix'), '-init')]",
+
+        "_artifactsLocation": "https://github.com/jorgerua/jmetertemplate/blob/master/",
+        "_extensionScript": "jmeter-install.sh"
+    },
+    "resources": [
+        {
+            "name": "[variables('publicIPAddressName')]",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIpAllocationMethod": "Static"
+            }
+        },
+        {
+            "name": "[variables('networkSecurityGroupName')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "default-allow-ssh",
+                        "properties": {
+                            "priority": 1000,
+                            "sourceAddressPrefix": "*",
+                            "protocol": "Tcp",
+                            "destinationPortRange": "22",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[variables('networkInterfaceName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('lnxgroup', 'Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                }
+            }
+        },
+        {
+            "name": "[variables('masterVM')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
+            ],
+            "properties": {
+                "osProfile": {
+                    "computerName": "[variables('masterVM')]",
+                    "adminUsername": "[parameters('admin-username')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "[concat('/home/', parameters('admin-username'), '/.ssh/authorized_keys')]",
+                                    "keyData": "[parameters('admin-publickey')]"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "hardwareProfile": {
+                    "vmSize": "[variables('virtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "16.10",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        }
+                    },
+                    "dataDisks": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+                        }
+                    ]
+                }
+            }, 
+            "resources": [
+                {
+                    "type": "extensions",
+                    "name": "[variables('vmExtensionName')]",
+                    "apiVersion": "2015-06-15",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Compute/virtualMachines', variables('masterVM'))]"
+                    ],
+                    "properties": {
+                        "publisher": "Microsoft.Azure.Extensions",
+                        "type": "CustomScript",
+                        "typeHandlerVersion": "2.0",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "fileUris": [
+                                "[variables('_artifactsLocation')]"
+                            ]
+                        },
+                        "protectedSettings": {
+                            "commandToExecute": "[variables('_extensionScript')]"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
+

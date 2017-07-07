@@ -1,0 +1,21 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "unique-env-prefix": {
+            "value": "ecommerce"
+        },
+        "virtual-network-name": {
+            "value": "lnxVNET"
+        },
+        "subnet-name": {
+            "value": "default"
+        },
+        "admin-username": {
+            "value": "jorgerua"
+        },
+        "admin-publickey": {
+            "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC2zqbtMkigtYRMnq25vYEJHKzEb+J4Lt5zKuQFug28D2o1x3X8UIlrIqQ6WtTRjCA/qdLKOYuc/2bqgWC61IrHd9f/ecv9iqpyk9Cv9bUBskJztepA5uYIfDjgYQQwvQlTal6H/0FK5YHduz24uhqWfmtCNmayVXoHMpzMVNFr1ZSb3ZQhjSkel6Cr2mxDaWjxJCkTbchbwqOPIgoxt9NkI4zK19f/rLJBZBHod0pTE1LkT3rOLbrygma+4LzncFHOzJeFt+msrjEWnyzw5E07z3aKpvkfZxGupS/KGqgubBw5cTIYzKTJFt1r+TmwkiSyzCtH56aNjZ1pyMvxVQBL"
+        }
+    }
+}
