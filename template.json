@@ -31,8 +31,11 @@
         "virtualMachineSize": "Standard_DS1_v2",
         "vmExtensionName": "[concat(variables('resourcePrefix'), '-init')]",
 
+        "vmssName": "[variables('resourcePrefix')]",
+
         "_artifactsLocation": "https://raw.githubusercontent.com/jorgerua/jmetertemplate/master/",
-        "_extensionScript": "jmeter-install.sh"
+        "_extensionScript": "jmeter-install-master.sh",
+        "_extensionVmssScript": "jmeter-install.sh"
     },
     "resources": [
         {
@@ -158,7 +161,7 @@
                     "properties": {
                         "publisher": "Microsoft.Azure.Extensions",
                         "type": "CustomScript",
-                        "typeHandlerVersion": "2.0",
+                        "typeHandlerVersion": "1.0",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
                             "fileUris": [
@@ -169,6 +172,97 @@
                     }
                 }
             ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "sku": {
+                "name": "Standard_D2",
+                "tier": "Standard",
+                "capacity": 1
+            },
+            "name": "[variables('vmssName')]",
+            "apiVersion": "2016-04-30-preview",
+            "location": "eastus",
+            "scale": null,
+            "properties": {
+                "singlePlacementGroup": false,
+                "upgradePolicy": {
+                    "mode": "Manual"
+                },
+                "virtualMachineProfile": {
+                    "osProfile": {
+                        "computerNamePrefix": "[concat(variables('vmssName'),'any')]",
+                        "adminUsername": "[parameters('admin-username')]",
+                        "linuxConfiguration": {
+                            "disablePasswordAuthentication": true,
+                            "ssh": {
+                                "publicKeys": [
+                                    {
+                                        "path": "[concat('/home/', parameters('admin-username'), '/.ssh/authorized_keys')]",
+                                        "keyData": "[parameters('admin-publickey')]"
+                                    }
+                                ]
+                            }
+                        },
+                        "secrets": []
+                    },
+                    "storageProfile": {
+                        "osDisk": {
+                            "createOption": "FromImage",
+                            "caching": "ReadWrite",
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                            }
+                        },
+                        "imageReference": {
+                            "publisher": "Canonical",
+                            "offer": "UbuntuServer",
+                            "sku": "16.04-LTS",
+                            "version": "latest"
+                        }
+                    },
+                    "networkProfile": {
+                        "networkInterfaceConfigurations": [
+                            {
+                                "name": "[concat(variables('vmssName'),'-nic')]",
+                                "properties": {
+                                    "primary": true,
+                                    "ipConfigurations": [
+                                        {
+                                            "name": "[concat(variables('vmssName'),'-ipconfig')]",
+                                            "properties": {
+                                                "subnet": {
+                                                    "id": "[variables('subnetRef')]"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "extensionProfile": {
+                        "extensions": [
+                            {
+                                "name": "customScript",
+                                "properties": {
+                                    "publisher": "Microsoft.Compute",
+                                    "settings": {
+                                        "fileUris": [
+                                            "[concat(variables('_artifactsLocation'),variables('_extensionVmssScript'))]"
+                                        ],
+                                        "commandToExecute": "[concat('./', variables('_extensionVmssScript'))]"
+                                    },
+                                    "typeHandlerVersion": "1.0",
+                                    "autoUpgradeMinorVersion": true,
+                                    "type": "CustomScriptExtension"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "overprovision": true
+            }
         }
     ]
 }
