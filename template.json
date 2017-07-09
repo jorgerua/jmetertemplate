@@ -31,7 +31,7 @@
         "virtualMachineSize": "Standard_DS1_v2",
         "vmExtensionName": "[concat(variables('resourcePrefix'), '-init')]",
 
-        "_artifactsLocation": "https://github.com/jorgerua/jmetertemplate/blob/master/",
+        "_artifactsLocation": "https://raw.githubusercontent.com/jorgerua/jmetertemplate/master/",
         "_extensionScript": "jmeter-install.sh"
     },
     "resources": [
@@ -162,11 +162,9 @@
                         "autoUpgradeMinorVersion": true,
                         "settings": {
                             "fileUris": [
-                                "[variables('_artifactsLocation')]"
-                            ]
-                        },
-                        "protectedSettings": {
-                            "commandToExecute": "[variables('_extensionScript')]"
+                                "[concat(variables('_artifactsLocation'),variables('_extensionScript'))]"
+                            ],
+                            "commandToExecute": "[concat('./', variables('_extensionScript'))]"
                         }
                     }
                 }
