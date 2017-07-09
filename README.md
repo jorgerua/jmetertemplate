@@ -12,13 +12,12 @@ This template deploys to a given Virtual Network/subnet a JMeter master virtual 
 Simple steps to start performance testing an application would be:
 
 1. Deploy this JMeter ARM template to some different subnet than the target application. Parameters are:
-| Parameter | Description |
-|------------------------|-------------------------------------------------------------------------------------------------------------------|
-| `Unique-env-prefix` | Prefix used to resources deployed in the resource group. Example: app1 |
-| `Virtual-network-name` |  Virtual Network where resources will be deployed. Virtual Network will not be created. It should already exists. |
-| `Subnet-name` | Subnet where resources will be deployed. Different from target application is recommended. |
-| `Admin-username` | Linux machines admin username. Should be used to ssh. |
-| `Admin-publickey` | Password is disabled so, use ssh public key generated in your machine to log in. |
+
+ * `Unique-env-prefix`:  Prefix used to resources deployed in the resource group. Example: app1 
+ * `Virtual-network-name`:   Virtual Network where resources will be deployed. Virtual Network will not be created. It should already exists. 
+ * `Subnet-name`:  Subnet where resources will be deployed. Different from target application is recommended. 
+ * `Admin-username`:  Linux machines admin username. Should be used to ssh. 
+ * `Admin-publickey`:  Password is disabled so, use ssh public key generated in your machine to log in. 
 
 2. JMeter master virtual machine has the public IP to SSH
 
