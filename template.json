@@ -161,7 +161,7 @@
                     "properties": {
                         "publisher": "Microsoft.Azure.Extensions",
                         "type": "CustomScript",
-                        "typeHandlerVersion": "1.0",
+                        "typeHandlerVersion": "2.0",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
                             "fileUris": [
@@ -244,18 +244,18 @@
                     "extensionProfile": {
                         "extensions": [
                             {
-                                "name": "customScript",
+                                "name": "CustomScript",
                                 "properties": {
-                                    "publisher": "Microsoft.Compute",
+                                    "publisher": "Microsoft.Azure.Extensions",
                                     "settings": {
                                         "fileUris": [
                                             "[concat(variables('_artifactsLocation'),variables('_extensionVmssScript'))]"
                                         ],
                                         "commandToExecute": "[concat('./', variables('_extensionVmssScript'))]"
                                     },
-                                    "typeHandlerVersion": "1.0",
+                                    "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
-                                    "type": "CustomScriptExtension"
+                                    "type": "CustomScript"
                                 }
                             }
                         ]
