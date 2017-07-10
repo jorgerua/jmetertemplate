@@ -10,3 +10,6 @@ apt-get install -y default-jre
 wget http://mirror.nexcess.net/apache//jmeter/binaries/apache-jmeter-3.2.tgz
 tar -xf apache-jmeter-3.2.tgz
 mv apache-jmeter-3.2/ /usr/share
+
+#jmeter home env variable
+export JMETER_HOME="/usr/share/apache-jmeter-3.2/"

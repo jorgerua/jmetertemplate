@@ -14,6 +14,9 @@ mv apache-jmeter-3.2/ /usr/share
 #jmeter properties adjustment
 sed -i 's/#server.rmi.localport/server.rmi.localport/g' /usr/share/apache-jmeter-3.2/bin/jmeter.properties
 
+#jmeter home env variable
+export JMETER_HOME="/usr/share/apache-jmeter-3.2/"
+
 #add jmeter server start to crontab during reboot
 crontab -l > ct.txt
 echo "@reboot   sh /usr/share/apache-jmeter-3.2/bin/jmeter.sh -s" >> ct.txt
